@@ -41,8 +41,12 @@ Server chạy tại `http://localhost:3000` theo mặc định.
 ### Endpoint
 - `GET /health` – kiểm tra sức khỏe root
 - `GET /api/health` – kiểm tra sức khỏe phạm vi API
-- `GET /api/rooms` – liệt kê phòng (cần kết nối MongoDB)
-- `POST /api/rooms` – tạo phòng (cần kết nối MongoDB)
+- `GET /api/v1/health` – kiểm tra sức khỏe API v1
+- `GET /api/v1/rooms` – liệt kê phòng (cần kết nối MongoDB)
+- `POST /api/v1/rooms` – tạo phòng (cần kết nối MongoDB)
+- `GET /api/v1/rooms/:id` – xem chi tiết phòng
+- `PUT /api/v1/rooms/:id` – cập nhật phòng
+- `DELETE /api/v1/rooms/:id` – xoá phòng
 
 ## Cấu trúc dự án
 ```

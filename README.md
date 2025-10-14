@@ -41,8 +41,12 @@ Server runs at `http://localhost:3000` by default.
 ### Endpoints
 - `GET /health` – Root health check
 - `GET /api/health` – API-scoped health check
-- `GET /api/rooms` – List rooms (requires MongoDB connection)
-- `POST /api/rooms` – Create a room (requires MongoDB connection)
+- `GET /api/v1/health` – API v1 health check
+- `GET /api/v1/rooms` – List rooms (requires MongoDB connection)
+- `POST /api/v1/rooms` – Create a room (requires MongoDB connection)
+- `GET /api/v1/rooms/:id` – Get room details
+- `PUT /api/v1/rooms/:id` – Update a room
+- `DELETE /api/v1/rooms/:id` – Delete a room
 
 ## Project Structure
 ```

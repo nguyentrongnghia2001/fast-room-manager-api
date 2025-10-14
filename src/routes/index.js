@@ -1,15 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const dbReady = require('../middlewares/dbReady');
-const roomsCtrl = require('../controllers/roomsController');
+const v1 = require('./v1');
+let v2;
+try {
+  v2 = require('./v2');
+} catch (_) {
+  v2 = null;
+}
 
-// Health check under /api
+// Health check under /api (aggregator)
 router.get('/health', (req, res) => {
-  res.json({ status: 'ok', scope: 'api', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', scope: 'api', versions: ['v1'], timestamp: new Date().toISOString() });
 });
 
-// Rooms (requires DB)
-router.get('/rooms', dbReady, roomsCtrl.listRooms);
-router.post('/rooms', dbReady, roomsCtrl.createRoom);
+// Mount versioned routers
+router.use('/v1', v1);
+if (v2) router.use('/v2', v2);
 
 module.exports = router;
