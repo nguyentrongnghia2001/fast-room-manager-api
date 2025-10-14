@@ -1,6 +1,6 @@
 // Global error handler
 const { StatusCodes } = require('http-status-codes');
-module.exports = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   const status = err.statusCode || err.status || StatusCodes.INTERNAL_SERVER_ERROR;
   const message = err.message || 'Internal Server Error';
   const isProd = process.env.NODE_ENV === 'production';
@@ -19,4 +19,21 @@ module.exports = (err, req, res, next) => {
   const payload = { error: message };
   if (err.errors) payload.details = err.errors;
   return res.status(status).json(payload);
-}
+};
+
+const notFoundHandler = (req, res, next) => {
+  res.status(StatusCodes.NOT_FOUND).json({ error: 'Not Found', path: req.originalUrl });
+};
+
+const successHandler = (statusCode, data, message = 'Success') => ({
+  statusCode,
+  status: 'success',
+  data,
+  message,
+});
+
+module.exports = {
+  errorHandler,
+  notFoundHandler,
+  successHandler,
+};

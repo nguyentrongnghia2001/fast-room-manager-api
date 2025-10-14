@@ -4,8 +4,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const routes = require('./routes');
-const notFound = require('./middlewares/notFound');
-const errorHandler = require('./middlewares/errorHandler');
+const responseState = require('./middlewares/responseState');
+const { errorHandler, notFoundHandler } = responseState;
+
+
 
 const app = express();
 
@@ -25,7 +27,8 @@ app.get('/health', (req, res) => {
 });
 
 // 404 and error handling
-app.use(notFound);
 app.use(errorHandler);
+// 400 handler
+app.use(notFoundHandler);
 
 module.exports = app;
