@@ -8,6 +8,8 @@ router.get('/health', (req, res) => {
 
 // Rooms resource router
 const roomsRoutes = require('./routesRooms');
+const floorRoutes = require('./routesFloor');
 router.use('/rooms', roomsRoutes);
+router.use('/floor', floorRoutes);
 
 module.exports = router;
