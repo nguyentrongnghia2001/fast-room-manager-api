@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const dbReady = require('../../middlewares/dbReady');
 const validateObjectId = require('../../middlewares/validateObjectId');
 const roomsController = require('../../controllers/roomsController');
 
