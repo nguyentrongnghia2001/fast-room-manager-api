@@ -8,7 +8,7 @@ const contractSchema = new Schema(
       required: [true, 'Room ID is required!'],
     },
     tenantId: {
-      type: String,
+      type: Schema.Types.ObjectId,
       ref: 'Tenant',
       required: [true, 'Tenant ID is required!'],
     },

@@ -9,10 +9,10 @@ const roomSchema = new Schema(
       minlength: [3, 'Name room must be at least 3 characters long!'],
       maxlength: [100, 'Name room must be at most 100 characters long!'],
     },
-    idFloor: {
-      type: String,
-      ref: 'Floor',
-      required: [true, 'Id floor is required!'] 
+    idFloor: { 
+      type: Schema.Types.ObjectId, 
+      ref: 'Floor', 
+      required: [true, 'Id floor is required!']
     },
     type: { 
       type: String,
