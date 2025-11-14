@@ -4,8 +4,50 @@ const roomService = require('../services/serviceRooms');
 
 exports.listRooms = async (req, res, next) => {
   try {
-    const rooms = await roomService.listRooms();
-    res.status(StatusCodes.OK).json(successHandler(StatusCodes.OK, rooms, 'Rooms found successfully'));
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.per_page) || 10;
+    const skip = (page - 1) * limit;
+
+    // Validate pagination parameters
+    if (page < 1) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ 
+        error: 'Page number must be greater than 0' 
+      });
+    }
+    if (limit < 1 || limit > 100) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ 
+        error: 'Limit must be between 1 and 100' 
+      });
+    }
+    
+    // Filter parameters
+    const params = {
+      search: req.query.search || '',
+      status: req.query.status || '',
+      type: req.query.type || '',
+      floor: req.query.floor || '',
+    };
+
+    // Sort parameters
+    let sort = {};
+    if(req.query.sort) {
+      sort.createdAt = parseInt(req.query.sort) || -1;
+    }
+
+    const { rooms, totalItems } = await roomService.listRooms(skip, limit, params, sort);
+    
+    const result = {
+      items: rooms,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems
+      }
+    };
+    
+    res.status(StatusCodes.OK).json(successHandler(StatusCodes.OK, result, 'Rooms found successfully'));
   } catch (err) {
     next(err);
   }
