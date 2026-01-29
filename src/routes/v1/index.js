@@ -11,10 +11,17 @@ const roomsRoutes = require('./routesRooms');
 const floorRoutes = require('./routesFloor');
 const tenantsRoutes = require('./routesTenants');
 const contractsRoutes = require('./routesContracts');
+const authRoutes = require('./routesAuth');
+const paymentsRoutes = require('./routesPayments');
+const reportsRoutes = require('./routesReports');
+
 router.use('/rooms', roomsRoutes);
 router.use('/floor', floorRoutes);
 router.use('/tenant', tenantsRoutes);
 router.use('/contract', contractsRoutes);
+router.use('/auth', authRoutes);
+router.use('/payments', paymentsRoutes);
+router.use('/reports', reportsRoutes);
 
 module.exports = router;
 
