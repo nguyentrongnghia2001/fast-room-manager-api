@@ -24,16 +24,3 @@ router.use('/payments', paymentsRoutes);
 router.use('/reports', reportsRoutes);
 
 module.exports = router;
-
-//  {
-//     "id": "3",
-//     "roomId": "68f32d331ce60823dc58d784",
-//     "tenantId": "3",
-//     "startDate": "2024-03-01",
-//     "endDate": "2025-02-28",
-//     "monthlyRent": 5000000,
-//     "deposit": 10000000,
-//     "status": "active",
-//     "createdAt": "2024-03-01",
-//     "updatedAt": "2024-03-01"
-//   }
