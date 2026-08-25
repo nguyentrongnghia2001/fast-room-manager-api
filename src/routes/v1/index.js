@@ -14,6 +14,8 @@ const contractsRoutes = require('./routesContracts');
 const authRoutes = require('./routesAuth');
 const paymentsRoutes = require('./routesPayments');
 const reportsRoutes = require('./routesReports');
+const chatRoutes = require('./routesChat');
+const ragRoutes = require('./routesRag');
 
 router.use('/rooms', roomsRoutes);
 router.use('/floor', floorRoutes);
@@ -22,5 +24,7 @@ router.use('/contract', contractsRoutes);
 router.use('/auth', authRoutes);
 router.use('/payments', paymentsRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/chat', chatRoutes);
+router.use('/rag', ragRoutes);
 
 module.exports = router;

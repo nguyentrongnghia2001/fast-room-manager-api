@@ -1,6 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const { successHandler } = require('../middlewares/responseState');
 const roomService = require('../services/serviceRooms');
+const serviceRag = require('../services/serviceRag');
 
 exports.listRooms = async (req, res, next) => {
   try {
@@ -57,6 +58,14 @@ exports.createRoom = async (req, res, next) => {
   try {
     const payload = req.body;
     const room = await roomService.createRoom(payload);
+    
+    // Background sync to Vector DB
+    if (room && room._id) {
+      serviceRag.syncRoomToVectorStore(room._id).catch((e) => {
+        console.error(`[VectorSync] Error syncing room ${room._id}:`, e.message);
+      });
+    }
+
     res.status(StatusCodes.CREATED).json(successHandler(StatusCodes.CREATED, room, 'Room created successfully'));
   } catch (err) {
     // Normalize common Mongoose errors
@@ -94,6 +103,12 @@ exports.updateRoom = async (req, res, next) => {
       context: 'query',
     });
     if (!room) return res.status(StatusCodes.NOT_FOUND).json({ error: 'Room not found' });
+    
+    // Background sync updated room to Vector DB
+    serviceRag.syncRoomToVectorStore(id).catch((e) => {
+      console.error(`[VectorSync] Error updating room vector ${id}:`, e.message);
+    });
+
     res.status(StatusCodes.OK).json(successHandler(StatusCodes.OK, room, 'Room updated successfully'));
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -114,6 +129,12 @@ exports.deleteRoom = async (req, res, next) => {
     const { id } = req.params;
     const room = await roomService.deleteRoom(id);
     if (!room) return res.status(StatusCodes.NOT_FOUND).json({ error: 'Room not found' });
+    
+    // Background delete room from Vector DB
+    serviceRag.deleteRoomFromVectorStore(id).catch((e) => {
+      console.error(`[VectorSync] Error deleting room vector ${id}:`, e.message);
+    });
+
     res.status(StatusCodes.OK).json(successHandler(StatusCodes.OK, room, 'Room deleted successfully'));
   } catch (err) {
     next(err);

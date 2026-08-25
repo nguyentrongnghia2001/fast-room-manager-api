@@ -364,6 +364,113 @@ Responses
 }
 ```
 
+## Chatbot RAG & Knowledge Base
+
+AI-powered conversational assistant and knowledge base management.
+
+### POST /api/v1/chat
+Send a question to the RAG chatbot and receive a response (JSON or SSE stream).
+
+Request Body
+```json
+{
+  "message": "Tìm giúp tôi phòng đơn tầng 2 giá dưới 4 triệu có điều hòa",
+  "sessionId": "session_123", // optional, generated if omitted
+  "stream": false             // optional, true for Server-Sent Events (SSE)
+}
+```
+
+Responses
+- 200 (JSON mode)
+```json
+{
+  "statusCode": 200,
+  "status": "success",
+  "data": {
+    "message": "Chào bạn! Hiện tại bên mình có Phòng 201 ở Tầng 2, loại phòng đơn với giá 3.500.000 VNĐ/tháng...",
+    "sessionId": "session_123",
+    "intent": "SEARCH_ROOM",
+    "sources": [
+      {
+        "type": "room",
+        "score": 0.85,
+        "metadata": { "name": "Phòng 201", "price": 3500000, "floor": "Tầng 2" }
+      }
+    ]
+  },
+  "message": "Message processed successfully"
+}
+```
+
+### GET /api/v1/chat/history/:sessionId
+Retrieve multi-turn chat history for a given session.
+
+Responses
+- 200
+```json
+{
+  "statusCode": 200,
+  "status": "success",
+  "data": {
+    "sessionId": "session_123",
+    "messages": [
+      { "sender": "user", "content": "...", "timestamp": "..." },
+      { "sender": "bot", "content": "...", "sources": [], "timestamp": "..." }
+    ]
+  }
+}
+```
+
+### DELETE /api/v1/chat/history/:sessionId
+Clear multi-turn chat history for a session.
+
+### POST /api/v1/rag/sync
+(Requires Bearer Token) Trigger full sync of rooms and default knowledge markdown docs into Vector Embeddings.
+
+Responses
+- 200
+```json
+{
+  "statusCode": 200,
+  "status": "success",
+  "data": {
+    "roomsSynced": 12,
+    "docsSynced": 3,
+    "totalVectors": 25
+  },
+  "message": "RAG Knowledge base synchronized successfully"
+}
+```
+
+### POST /api/v1/rag/documents
+(Requires Bearer Token) Upload or create a knowledge document (`.md`, `.pdf`, `.txt`).
+
+Multipart form data or JSON body:
+```json
+{
+  "title": "Quy định gửi xe mới",
+  "content": "Nội dung quy định chi tiết...",
+  "fileType": "markdown"
+}
+```
+
+### GET /api/v1/rag/documents
+(Requires Bearer Token) List all indexed knowledge documents.
+
+### DELETE /api/v1/rag/documents/:id
+(Requires Bearer Token) Delete a knowledge document and its associated vector chunks.
+
+### POST /api/v1/rag/test-query
+Test semantic retrieval context for a query without invoking LLM.
+
+Request Body
+```json
+{
+  "query": "Quy định giờ đóng cửa buổi tối",
+  "topK": 3
+}
+```
+
 ## Success Schema
 
 Most endpoints return success responses following this structure:
