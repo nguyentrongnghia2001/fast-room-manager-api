@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node tests/rag.test.js"
+    "test": "node tests/rag.test.js",
+    "seed": "node scripts/seed.js"
   },
   "repository": {
     "type": "git",
