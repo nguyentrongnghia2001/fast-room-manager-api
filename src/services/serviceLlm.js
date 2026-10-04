@@ -32,50 +32,65 @@ async function generateResponse({ systemPrompt, messages = [], temperature = 0.3
 
   // 1. Google Gemini
   if (provider === 'gemini' && env.GEMINI_API_KEY) {
-    try {
-      const client = getGeminiClient();
-      const modelName = env.GEMINI_MODEL || 'gemini-1.5-flash';
-      const model = client.getGenerativeModel({
-        model: modelName,
-        systemInstruction: systemPrompt,
-        generationConfig: {
-          temperature,
-          maxOutputTokens: 1500,
-        },
-      });
+    const candidateModels = [
+      env.GEMINI_MODEL || 'gemini-3.5-flash',
+      'gemini-3.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+    ].filter((v, i, a) => a.indexOf(v) === i);
 
-      // Format conversation history for Gemini
-      // Gemini expects role: 'user' | 'model'
-      const formattedHistory = [];
-      for (let i = 0; i < messages.length - 1; i++) {
-        const msg = messages[i];
-        if (msg.role === 'system') continue;
-        formattedHistory.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }],
+    let lastGeminiError = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        const client = getGeminiClient();
+        const model = client.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemPrompt,
+          generationConfig: {
+            temperature,
+            maxOutputTokens: 1500,
+          },
         });
+
+        // Format conversation history for Gemini
+        // Gemini expects role: 'user' | 'model'
+        const formattedHistory = [];
+        for (let i = 0; i < messages.length - 1; i++) {
+          const msg = messages[i];
+          if (msg.role === 'system') continue;
+          formattedHistory.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }],
+          });
+        }
+
+        const lastMsg = messages[messages.length - 1];
+        const chat = model.startChat({
+          history: formattedHistory,
+        });
+
+        const promptText = lastMsg ? lastMsg.content : 'Xin chào';
+        const result = await chat.sendMessage(promptText);
+        const response = await result.response;
+        const text = response.text();
+
+        return {
+          content: text,
+          model: modelName,
+          provider: 'gemini',
+        };
+      } catch (err) {
+        lastGeminiError = err;
+        console.warn(`[LLM Gemini Warning] Model ${modelName} failed (${err.message}). Trying fallback model if available...`);
       }
+    }
 
-      const lastMsg = messages[messages.length - 1];
-      const chat = model.startChat({
-        history: formattedHistory,
-      });
-
-      const promptText = lastMsg ? lastMsg.content : 'Xin chào';
-      const result = await chat.sendMessage(promptText);
-      const response = await result.response;
-      const text = response.text();
-
-      return {
-        content: text,
-        model: modelName,
-        provider: 'gemini',
-      };
-    } catch (err) {
-      console.error(`[LLM Gemini Error]: ${err.message}`);
+    if (lastGeminiError) {
+      console.error(`[LLM Gemini Error]: All Gemini model candidates failed. Last error: ${lastGeminiError.message}`);
       // Fallback to OpenAI if Gemini fails and OpenAI key is available
       if (!env.OPENAI_API_KEY) {
-        throw err;
+        throw lastGeminiError;
       }
     }
   }
@@ -132,44 +147,52 @@ async function generateResponseStream({ systemPrompt, messages = [], onChunk }) 
   const provider = env.LLM_PROVIDER || 'gemini';
 
   if (provider === 'gemini' && env.GEMINI_API_KEY) {
-    try {
-      const client = getGeminiClient();
-      const modelName = env.GEMINI_MODEL || 'gemini-1.5-flash';
-      const model = client.getGenerativeModel({
-        model: modelName,
-        systemInstruction: systemPrompt,
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1500,
-        },
-      });
+    const candidateModels = [
+      env.GEMINI_MODEL || 'gemini-3.5-flash',
+      'gemini-3.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+    ].filter((v, i, a) => a.indexOf(v) === i);
 
-      const formattedHistory = [];
-      for (let i = 0; i < messages.length - 1; i++) {
-        const msg = messages[i];
-        if (msg.role === 'system') continue;
-        formattedHistory.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }],
+    for (const modelName of candidateModels) {
+      try {
+        const client = getGeminiClient();
+        const model = client.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemPrompt,
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1500,
+          },
         });
+
+        const formattedHistory = [];
+        for (let i = 0; i < messages.length - 1; i++) {
+          const msg = messages[i];
+          if (msg.role === 'system') continue;
+          formattedHistory.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }],
+          });
+        }
+
+        const lastMsg = messages[messages.length - 1];
+        const chat = model.startChat({ history: formattedHistory });
+        const promptText = lastMsg ? lastMsg.content : 'Xin chào';
+
+        const result = await chat.sendMessageStream(promptText);
+        let fullText = '';
+
+        for await (const chunk of result.stream) {
+          const chunkText = chunk.text();
+          fullText += chunkText;
+          if (onChunk) onChunk(chunkText);
+        }
+
+        return fullText;
+      } catch (err) {
+        console.warn(`[LLM Stream Gemini Warning] Model ${modelName} stream failed: ${err.message}. Trying fallback...`);
       }
-
-      const lastMsg = messages[messages.length - 1];
-      const chat = model.startChat({ history: formattedHistory });
-      const promptText = lastMsg ? lastMsg.content : 'Xin chào';
-
-      const result = await chat.sendMessageStream(promptText);
-      let fullText = '';
-
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        fullText += chunkText;
-        if (onChunk) onChunk(chunkText);
-      }
-
-      return fullText;
-    } catch (err) {
-      console.error(`[LLM Stream Gemini Error]: ${err.message}`);
     }
   }
 

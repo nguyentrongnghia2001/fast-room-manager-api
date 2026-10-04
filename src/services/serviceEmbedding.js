@@ -35,18 +35,27 @@ async function generateEmbedding(text) {
 
   // 1. Try Gemini
   if (provider === 'gemini' && env.GEMINI_API_KEY) {
-    try {
-      const client = getGeminiClient();
-      const model = client.getGenerativeModel({
-        model: env.GEMINI_EMBEDDING_MODEL || 'text-embedding-004',
-      });
-      const result = await model.embedContent(cleanText);
-      if (result && result.embedding && Array.isArray(result.embedding.values)) {
-        return result.embedding.values;
+    const candidateEmbeddingModels = [
+      env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001',
+      'gemini-embedding-001',
+      'gemini-embedding-2',
+    ].filter((v, i, a) => a.indexOf(v) === i);
+
+    for (const embModelName of candidateEmbeddingModels) {
+      try {
+        const client = getGeminiClient();
+        const model = client.getGenerativeModel({
+          model: embModelName,
+        });
+        const result = await model.embedContent(cleanText);
+        if (result && result.embedding && Array.isArray(result.embedding.values)) {
+          return result.embedding.values;
+        }
+      } catch (err) {
+        console.warn(`[Embedding] Gemini embedding with model ${embModelName} failed: ${err.message}.`);
       }
-    } catch (err) {
-      console.warn(`[Embedding] Gemini embedding error: ${err.message}. Falling back to fallback mock.`);
     }
+    console.warn('[Embedding] All Gemini embedding models failed. Falling back to next provider or mock.');
   }
 
   // 2. Try OpenAI
