@@ -12,13 +12,17 @@ const env = {
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   LLM_PROVIDER: process.env.LLM_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'gemini'),
-  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
   OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o-mini',
   EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'gemini'),
-  GEMINI_EMBEDDING_MODEL: process.env.GEMINI_EMBEDDING_MODEL || 'text-embedding-004',
+  GEMINI_EMBEDDING_MODEL: process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001',
   OPENAI_EMBEDDING_MODEL: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
   VECTOR_TOP_K: Number(process.env.VECTOR_TOP_K || 5),
   VECTOR_SIMILARITY_THRESHOLD: Number(process.env.VECTOR_SIMILARITY_THRESHOLD || 0.4),
+
+  // MCP (Streamable HTTP) Configuration
+  MCP_API_KEY: process.env.MCP_API_KEY || '',
+  MCP_SESSION_IDLE_MIN: Number(process.env.MCP_SESSION_IDLE_MIN || 30),
 };
 
 module.exports = env;

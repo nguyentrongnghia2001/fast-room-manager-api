@@ -7,6 +7,7 @@ const routes = require('./routes');
 const responseState = require('./middlewares/responseState');
 const { errorHandler, notFoundHandler } = responseState;
 const dbReady = require('./middlewares/dbReady');
+const { mcpRouter } = require('./mcp');
 const app = express();
 
 // Security & common middleware
@@ -18,6 +19,9 @@ app.use(morgan('dev'));
 
 // Base routes
 app.use('/api', dbReady, routes);
+
+// MCP server (Streamable HTTP) for AI clients — see src/mcp/README.md
+app.use('/mcp', mcpRouter);
 
 // Health endpoint (root)
 app.get('/health', (req, res) => {
